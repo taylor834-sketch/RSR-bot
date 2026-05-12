@@ -141,20 +141,20 @@ app.post('/slack/interactions', async (req, res) => {
   if (actionId === 'create_ticket') {
     // Send to Zapier webhook → Notion
     try {
-      await fetch(ZAPIER_CREATE_WEBHOOK, {
+      const zapRes = await fetch(ZAPIER_CREATE_WEBHOOK, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ticket, channel, thread_ts, client_id }),
       });
+      const zapData = await zapRes.json().catch(() => ({}));
+      const notionUrl = zapData.url || zapData.Url || null;
 
       // Post public confirmation in thread
       await slack.chat.postMessage({
         channel,
         thread_ts,
-        username: 'RSR Bot',
-        icon_emoji: ':white_check_mark:',
         text: 'Ticket created',
-        blocks: buildConfirmationBlocks(ticket),
+        blocks: buildConfirmationBlocks(ticket, notionUrl),
       });
 
     } catch (err) {
@@ -202,19 +202,19 @@ app.post('/slack/modals', async (req, res) => {
   };
 
   try {
-    await fetch(ZAPIER_CREATE_WEBHOOK, {
+    const zapRes = await fetch(ZAPIER_CREATE_WEBHOOK, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ticket, channel: meta.channel, thread_ts: meta.thread_ts, client_id: meta.client_id }),
     });
+    const zapData = await zapRes.json().catch(() => ({}));
+    const notionUrl = zapData.url || zapData.Url || null;
 
     await slack.chat.postMessage({
       channel: meta.channel,
       thread_ts: meta.thread_ts,
-      username: 'RSR Bot',
-      icon_emoji: ':white_check_mark:',
       text: 'Ticket created',
-      blocks: buildConfirmationBlocks(ticket),
+      blocks: buildConfirmationBlocks(ticket, notionUrl),
     });
   } catch (err) {
     console.error('Modal submit error:', err);
@@ -301,9 +301,12 @@ function buildPreviewBlocks(ticket, channel, thread_ts, client_id, channel_name)
   ];
 }
 
-function buildConfirmationBlocks(ticket) {
+function buildConfirmationBlocks(ticket, notionUrl) {
+  const header = notionUrl
+    ? `*Ticket Created* — <${notionUrl}|View in Notion>`
+    : '*Ticket Created*';
   return [
-    { type: 'section', text: { type: 'mrkdwn', text: '*Ticket Created*' } },
+    { type: 'section', text: { type: 'mrkdwn', text: header } },
     { type: 'section', fields: [
       { type: 'mrkdwn', text: `*Title:* ${ticket.title}` },
       { type: 'mrkdwn', text: `*Priority:* ${ticket.priority}` },
