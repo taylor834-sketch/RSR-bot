@@ -12,8 +12,7 @@ const ZAPIER_CREATE_WEBHOOK  = process.env.ZAPIER_CREATE_WEBHOOK;
 
 // Notion client page IDs — add more as you onboard clients
 const CLIENT_MAP = {
-  'tickets-garner': '337621f3-39f7-81af-8054-c0cdf06c8af8',
-  'tickets-fexa':   '8e2c66cc-e4ed-49d9-a1ee-f78c256707e4',
+  'rsr-fexa': '8e2c66cc-e4ed-49d9-a1ee-f78c256707e4',
 };
 
 const slack = new WebClient(SLACK_BOT_TOKEN);
