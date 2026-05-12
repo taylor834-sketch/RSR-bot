@@ -344,6 +344,32 @@ function buildEditModal(ticket, channel, thread_ts, client_id, channel_name) {
   };
 }
 
+// ─── Notion task completed callback (called by Zapier) ───────────────────
+app.post('/notion/complete', async (req, res) => {
+  const { channel, thread_ts, title, url } = req.body;
+
+  if (!channel || !thread_ts) {
+    return res.status(400).json({ error: 'Missing channel or thread_ts' });
+  }
+
+  res.sendStatus(200);
+
+  const link = url ? ` — <${url}|View in Notion>` : '';
+
+  try {
+    await slack.chat.postMessage({
+      channel,
+      thread_ts,
+      text: `Task completed: ${title || 'Untitled'}`,
+      blocks: [
+        { type: 'section', text: { type: 'mrkdwn', text: `*Task Completed:* ${title || 'Untitled'}${link}` } },
+      ],
+    });
+  } catch (err) {
+    console.error('Complete notification error:', err);
+  }
+});
+
 // ─── Start ─────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`RSR Bot running on port ${PORT}`));
