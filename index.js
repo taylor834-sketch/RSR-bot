@@ -42,14 +42,14 @@ app.use((req, res, next) => {
 
 // ─── Slack URL verification challenge ──────────────────────────────────────
 app.post('/slack/events', async (req, res) => {
-  if (!verifySlackSignature(req)) return res.status(401).send('Unauthorized');
-
   const body = req.body;
 
-  // One-time URL verification from Slack
+  // One-time URL verification — must respond before signature check
   if (body.type === 'url_verification') {
     return res.json({ challenge: body.challenge });
   }
+
+  if (!verifySlackSignature(req)) return res.status(401).send('Unauthorized');
 
   // Acknowledge immediately — Slack requires response within 3s
   res.sendStatus(200);
