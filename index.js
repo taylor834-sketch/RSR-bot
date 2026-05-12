@@ -88,7 +88,7 @@ app.post('/slack/events', async (req, res) => {
       channel: event.channel,
       user: event.user,
       thread_ts: event.thread_ts || event.ts,
-      text: "👋 I couldn't find a message to parse. Reply to a message with @RSRBot to create a ticket from it.",
+      text: "I couldn't find a message to parse. Reply to a message with @RSRBot to create a ticket from it.",
     });
     return;
   }
@@ -279,39 +279,38 @@ No preamble, no markdown fences. JSON only.`,
   return JSON.parse(raw.replace(/```json|```/g, '').trim());
 }
 
-const PRIORITY_EMOJI = { High: '🔴', Medium: '🟡', Low: '🟢' };
-const EFFORT_LABEL   = { XS: 'XS (<30m)', S: 'S (~1hr)', M: 'M (half day)', L: 'L (full day)', XL: 'XL (multi-day)' };
+const EFFORT_LABEL = { XS: '<30 min', S: '~1 hour', M: 'Half day', L: 'Full day', XL: 'Multi-day' };
 
 function buildPreviewBlocks(ticket, channel, thread_ts, client_id, channel_name) {
   const buttonValue = JSON.stringify({ ticket, channel, thread_ts, client_id, channel_name });
   return [
-    { type: 'section', text: { type: 'mrkdwn', text: '*🎫 Ticket Preview*\nReview before creating:' } },
+    { type: 'section', text: { type: 'mrkdwn', text: '*Ticket Preview*\nReview before creating:' } },
     { type: 'divider' },
     { type: 'section', fields: [
-      { type: 'mrkdwn', text: `*📋 Title*\n${ticket.title}` },
-      { type: 'mrkdwn', text: `*${PRIORITY_EMOJI[ticket.priority] || '🟡'} Priority*\n${ticket.priority}` },
-      { type: 'mrkdwn', text: `*📏 Effort*\n${EFFORT_LABEL[ticket.effort] || ticket.effort}` },
-      { type: 'mrkdwn', text: `*📅 Due*\n${ticket.due_date || 'Not set'}` },
+      { type: 'mrkdwn', text: `*Title:* ${ticket.title}` },
+      { type: 'mrkdwn', text: `*Priority:* ${ticket.priority}` },
+      { type: 'mrkdwn', text: `*Effort:* ${EFFORT_LABEL[ticket.effort] || ticket.effort}` },
+      { type: 'mrkdwn', text: `*Due:* ${ticket.due_date || 'Not set'}` },
     ]},
-    { type: 'section', text: { type: 'mrkdwn', text: `*📝 Notes*\n${ticket.notes}` } },
+    { type: 'section', text: { type: 'mrkdwn', text: `*Notes:* ${ticket.notes}` } },
     { type: 'divider' },
     { type: 'actions', elements: [
-      { type: 'button', action_id: 'create_ticket', style: 'primary', text: { type: 'plain_text', text: '✅ Create Ticket' }, value: buttonValue },
-      { type: 'button', action_id: 'edit_ticket',   text: { type: 'plain_text', text: '✏️ Edit' },                           value: buttonValue },
+      { type: 'button', action_id: 'create_ticket', style: 'primary', text: { type: 'plain_text', text: 'Create Ticket' }, value: buttonValue },
+      { type: 'button', action_id: 'edit_ticket',   text: { type: 'plain_text', text: 'Edit' },                            value: buttonValue },
     ]},
   ];
 }
 
 function buildConfirmationBlocks(ticket) {
   return [
-    { type: 'section', text: { type: 'mrkdwn', text: `✅ *Ticket Created*` } },
+    { type: 'section', text: { type: 'mrkdwn', text: '*Ticket Created*' } },
     { type: 'section', fields: [
-      { type: 'mrkdwn', text: `*📋 Title*\n${ticket.title}` },
-      { type: 'mrkdwn', text: `*${PRIORITY_EMOJI[ticket.priority] || '🟡'} Priority*\n${ticket.priority}` },
-      { type: 'mrkdwn', text: `*📏 Effort*\n${EFFORT_LABEL[ticket.effort] || ticket.effort}` },
-      { type: 'mrkdwn', text: `*📅 Due*\n${ticket.due_date || 'Not set'}` },
+      { type: 'mrkdwn', text: `*Title:* ${ticket.title}` },
+      { type: 'mrkdwn', text: `*Priority:* ${ticket.priority}` },
+      { type: 'mrkdwn', text: `*Effort:* ${EFFORT_LABEL[ticket.effort] || ticket.effort}` },
+      { type: 'mrkdwn', text: `*Due:* ${ticket.due_date || 'Not set'}` },
     ]},
-    { type: 'section', text: { type: 'mrkdwn', text: `*📝 Notes*\n${ticket.notes}` } },
+    { type: 'section', text: { type: 'mrkdwn', text: `*Notes:* ${ticket.notes}` } },
   ];
 }
 
@@ -320,7 +319,7 @@ function buildEditModal(ticket, channel, thread_ts, client_id, channel_name) {
     type: 'modal',
     callback_id: 'edit_ticket_modal',
     private_metadata: JSON.stringify({ channel, thread_ts, client_id, channel_name }),
-    title: { type: 'plain_text', text: '✏️ Edit Ticket' },
+    title: { type: 'plain_text', text: 'Edit Ticket' },
     submit: { type: 'plain_text', text: 'Create Ticket' },
     close:  { type: 'plain_text', text: 'Cancel' },
     blocks: [
